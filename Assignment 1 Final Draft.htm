@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVA Report: Accredible & The Future of Credentialing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0f172a; 
+            color: #f8fafc; 
+            overflow-x: hidden; 
+        }
+        
+        .glass-panel { 
+            background: rgba(30, 41, 59, 0.7); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255,255,255,0.1); 
+        }
+        
+        .gradient-text { 
+            background: linear-gradient(to right, #38bdf8, #818cf8); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+        
+        .animate-fade-in { 
+            animation: fadeIn 1s ease-in-out; 
+        }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* 3D Cube Styles */
+        .scene { 
+            width: 250px; 
+            height: 250px; 
+            perspective: 1000px; 
+            margin: 2rem auto; 
+        }
+        
+        .cube { 
+            width: 100%; 
+            height: 100%; 
+            position: relative; 
+            transform-style: preserve-3d; 
+            transform: translateZ(-125px) rotateX(-20deg) rotateY(25deg); 
+            cursor: grab; 
+        }
+        
+        .cube.dragging { 
+            cursor: grabbing; 
+            transition: none; 
+        }
+        
+        .cube:not(.dragging) { 
+            transition: transform 0.2s ease-out; 
+        }
+        
+        .cube-face { 
+            position: absolute; 
+            width: 250px; 
+            height: 250px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: 600; 
+            font-size: 1.25rem; 
+            color: white; 
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(4px);
+            user-select: none;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.5);
+        }
+        
+        .cube-face:hover, .cube-face:focus { 
+            border-color: rgba(255,255,255,0.9); 
+            text-shadow: 0 0 10px rgba(255,255,255,0.5); 
+            background-blend-mode: overlay; 
+            outline: none;
+        }
+        
+        /* Position the 6 faces */
+        .face-front  { transform: rotateY(0deg) translateZ(125px); background: rgba(14, 165, 233, 0.85); }
+        .face-right  { transform: rotateY(90deg) translateZ(125px); background: rgba(16, 185, 129, 0.85); }
+        .face-back   { transform: rotateY(180deg) translateZ(125px); background: rgba(245, 158, 11, 0.85); }
+        .face-left   { transform: rotateY(-90deg) translateZ(125px); background: rgba(244, 63, 94, 0.85); }
+        .face-top    { transform: rotateX(90deg) translateZ(125px); background: rgba(168, 85, 247, 0.85); }
+        .face-bottom { transform: rotateX(-90deg) translateZ(125px); background: rgba(99, 102, 241, 0.85); }
+
+        /* Print Fallback Element (Hidden by default) */
+        .print-fallback { display: none; }
+
+        /* ================= PRINT CSS RULES ================= */
+        @media print {
+            body { 
+                background-color: #ffffff; 
+                color: #000000; 
+                overflow: visible; 
+            }
+            .glass-panel, .bg-slate-900, .bg-slate-800, .bg-slate-800\/50, .bg-indigo-900\/30, .bg-emerald-900\/20 { 
+                background: none !important; 
+                background-color: #ffffff !important;
+                border: 1px solid #ccc !important; 
+                box-shadow: none !important; 
+                color: #000000 !important; 
+            }
+            .text-slate-300, .text-slate-400, .text-white, .text-sky-300, .text-emerald-400, .text-indigo-300, .text-sky-400, .text-purple-400, .text-rose-400, .text-amber-400 { 
+                color: #000000 !important; 
+            }
+            .gradient-text { 
+                background: none; 
+                -webkit-text-fill-color: #000; 
+                color: #000; 
+            }
+            /* Hide non-essential UI elements for printing */
+            nav, .scene, #cubeModal, .step-btn, button, .animate-pulse, .fa-mouse-pointer, .fa-cube { 
+                display: none !important; 
+            }
+            /* Show text-fallback for the interactive cube */
+            .print-fallback { 
+                display: block !important; 
+                margin-top: 2rem;
+            }
+            .border-slate-700, .border-emerald-500\/30, .border-slate-600 { 
+                border-color: #aaa !important; 
+            }
+            a { 
+                color: #0000EE !important; 
+                text-decoration: underline; 
+            }
+            h1, h2, h3, h4 { 
+                color: #000000 !important; 
+                page-break-after: avoid; 
+            }
+            section { 
+                page-break-inside: avoid; 
+                margin-bottom: 20px; 
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="fixed w-full z-40 glass-panel border-b-0 border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-chart-pie text-sky-400 text-xl" aria-hidden="true"></i>
+                    <span class="font-bold text-lg tracking-wider">Analyst Report (A1) - Jake DePo</span>
+                </div>
+                <div class="hidden md:block text-sm text-slate-400 font-medium">
+                    Target: Accredible | Sector: Micro-credentialing
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center animate-fade-in">
+        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
+            Grassroots Certification<br>
+            <span class="gradient-text">Evaluating Accredible</span>
+        </h1>
+        <p class="mt-4 max-w-2xl text-xl text-slate-400 mx-auto">
+            An investment analysis on centralized infrastructure in a decentralized credentialing market.
+        </p>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 space-y-12">
+
+        <section class="glass-panel rounded-2xl p-8 md:p-12 shadow-2xl animate-fade-in">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="bg-indigo-500/20 text-indigo-400 p-2 rounded-lg" aria-hidden="true"><i class="fas fa-bullseye"></i></span>
+                <h2 class="text-2xl font-bold">Section 1: Introduction to the Market</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8 mb-12">
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-sky-300">Purpose & Value Proposition</h3>
+                    <p class="text-slate-300 leading-relaxed mb-4">
+                        The purpose of this opportunity audit is to explore the blockchain accreditation market space, and more specifically, to analyse “Accredible” as a leader in the space to determine if it has venture viability as an educational technology.
+                    </p>
+                    <p class="text-slate-300 leading-relaxed mb-4">
+                        The main value proposition of most blockchain credential companies falls into one or more of the following categories <a class="text-blue-600 underline hover:text-blue-800" href="https://www.trueoriginal.com/insights/blockchain-vs-traditional-certificate-verification" target="_blank">(TrueOriginal, 2026)</a>:
+                    </p>
+                    <ul class="text-slate-300 leading-relaxed mb-4 list-disc pl-6">
+                        <li>Flexibility and specific focus through micro-credentialing.</li>
+                        <li>Security, efficiency, and transparency by leveraging blockchain public registry technology <a class="text-blue-600 underline hover:text-blue-800" href="https://doxychain.com" target="_blank">(DoxyChain, 2024)</a></li>
+                        <li>For Accredible specifically, a B2B offering that allows employers to earn, record, and track employee certifications in one centralized location.</li>
+                    </ul>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+                    <h3 class="text-lg font-semibold mb-4 text-sky-300">HolonIQ Connection: Peer-to-Peer</h3>
+                    <p class="text-sm text-slate-300">
+                        In 2019, HolonIQ posited that the “Peer-to-Peer” educational scenario could be a major possibility in global education out to 2030. Specifically, they suggest the possibility that “blockchain technology fundamentally reconfigures credentialing and unlocks the collective creativity and IP of teachers” <a class="text-blue-600 underline hover:text-blue-800" href="https://comms.holoniq.com/hubfs/Education/Asset%20downloads/HolonIQ%20Education%20in%202030.pdf" target="_blank">(2019)</a>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 rounded-xl p-6 border border-slate-700 mb-12">
+                <h3 class="text-lg font-semibold text-white mb-2"><i class="fas fa-link text-sky-400 mr-2" aria-hidden="true"></i>What is a Blockchain Credential?</h3>
+                <p class="text-sm text-slate-400 mb-6">
+                    In essence, a blockchain credential is just like any other credential issued by a specific person, institution or otherwise, but with the added benefit of being cryptographically tied to a public, tamper-proof ledger. This is important for two reasons. <a class="text-blue-600 underline hover:text-blue-800" href="https://www.sciencedirect.com/science/article/pii/S0160791X22003177?fr=RR-2&ref=pdf_download&rr=a10f77d53d050c8d" target="_blank">(Pu and Lam, 2023)</a>
+                    The credential itself becomes unfalsifiable and tamper-proof. The cryptographic hash (like a password) associated with the credential would need to be changed on the majority of records on the public blockchain record. This would be akin to trying to hack into the systems of hundreds of thousands of banks all at the same time.
+                </p>
+                
+                <div class="relative flex flex-col md:flex-row justify-between items-center gap-4 mb-6 px-4">
+                    <div class="hidden md:block absolute top-1/2 left-12 right-12 h-1 bg-slate-700 -z-10 transform -translate-y-1/2"></div>
+                    
+                    <button onclick="showStep(1)" id="btnStep1" aria-label="View Step 1: The Issuer Grants the Credential" class="step-btn bg-slate-800 border-2 border-sky-500 rounded-full w-16 h-16 flex items-center justify-center text-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.5)] transition-all z-10 focus:outline-none focus:ring-2 focus:ring-white">
+                        <i class="fas fa-university text-2xl" aria-hidden="true"></i>
+                    </button>
+                    <button onclick="showStep(2)" id="btnStep2" aria-label="View Step 2: Cryptographic Hashing" class="step-btn bg-slate-800 border-2 border-slate-600 rounded-full w-16 h-16 flex items-center justify-center text-slate-400 hover:border-purple-400 hover:text-purple-400 transition-all z-10 focus:outline-none focus:ring-2 focus:ring-white">
+                        <i class="fas fa-hashtag text-2xl" aria-hidden="true"></i>
+                    </button>
+                    <button onclick="showStep(3)" id="btnStep3" aria-label="View Step 3: Learner Ownership" class="step-btn bg-slate-800 border-2 border-slate-600 rounded-full w-16 h-16 flex items-center justify-center text-slate-400 hover:border-emerald-400 hover:text-emerald-400 transition-all z-10 focus:outline-none focus:ring-2 focus:ring-white">
+                        <i class="fas fa-wallet text-2xl" aria-hidden="true"></i>
+                    </button>
+                    <button onclick="showStep(4)" id="btnStep4" aria-label="View Step 4: Trustless Verification" class="step-btn bg-slate-800 border-2 border-slate-600 rounded-full w-16 h-16 flex items-center justify-center text-slate-400 hover:border-amber-400 hover:text-amber-400 transition-all z-10 focus:outline-none focus:ring-2 focus:ring-white">
+                        <i class="fas fa-briefcase text-2xl" aria-hidden="true"></i>
+                    </button>
+                </div>
+                
+                <div id="stepDesc" class="p-5 bg-slate-800 rounded-lg border border-slate-600 min-h-[120px] flex items-center" aria-live="polite">
+                    <div>
+                        <h4 class="font-bold text-sky-400 mb-2">Step 1: The Issuer Grants the Credential</h4>
+                        <p class="text-sm text-slate-300">An institution (like a university or bootcamp) awards a digital badge to a learner. Instead of just generating a PDF, they prepare to anchor this achievement to the blockchain.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-indigo-900/30 border-l-4 border-indigo-500 rounded-xl p-6 mb-12 shadow-inner">
+                <h3 class="text-lg font-semibold text-indigo-300 mb-2"><i class="fas fa-comment-dots mr-2" aria-hidden="true"></i>Connecting the Dots</h3>
+                <p class="text-sm text-slate-300 leading-relaxed">
+                    Similarly, it insures your credential in the event that the issuer goes out of business and/or shuts down their central issuing servers. Imagine trying to retrieve an old transcript or accreditation from an online university that has gone out of business and shut their servers down.
+                </p>
+            </div>
+
+            <div class="bg-slate-900 rounded-xl p-6 border border-slate-700">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">Solving the "Dead Server" Problem</h3>
+                        <p class="text-xs text-slate-400 mt-1">Comparing verification flows when an issuing institution fails.</p>
+                    </div>
+                    <div class="flex bg-slate-800 p-1 rounded-lg border border-slate-700">
+                        <button id="btnActive" onclick="setSimState('active')" aria-label="Simulate Active Issuer Scenario" class="px-4 py-2 rounded-md bg-sky-500 text-slate-900 font-bold transition-all text-sm focus:outline-none focus:ring-2 focus:ring-white">Issuer Active</button>
+                        <button id="btnBankrupt" onclick="setSimState('bankrupt')" aria-label="Simulate Bankrupt Issuer Scenario" class="px-4 py-2 rounded-md text-slate-400 hover:text-white transition-all text-sm focus:outline-none focus:ring-2 focus:ring-white">Issuer Bankrupt</button>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8" aria-live="polite">
+                    <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700 relative flex flex-col items-center text-center">
+                        <div class="absolute top-0 left-0 bg-slate-700 text-xs px-3 py-1 rounded-br-lg rounded-tl-xl font-semibold">A. Legacy Centralized</div>
+                        <div class="mt-4"><i class="fas fa-building text-2xl text-slate-400 mb-2" aria-hidden="true"></i><br><span class="text-xs font-semibold">Employer Verifying</span></div>
+                        <div class="h-8 border-l-2 border-dashed border-slate-500 my-2"></div>
+                        <div id="serverA" class="transition-all duration-300">
+                            <i id="iconServerA" class="fas fa-server text-3xl text-sky-400 mb-2" aria-hidden="true"></i><br>
+                            <span class="text-xs font-semibold">Institution's Private Database</span>
+                        </div>
+                        <div id="resultA" class="mt-6 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 w-full transition-all">
+                            <i id="iconResultA" class="fas fa-check-circle text-emerald-500 text-xl mb-1" aria-hidden="true"></i>
+                            <p id="textResultA" class="text-xs text-emerald-400 font-medium">Verified: Server Online</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700 relative flex flex-col items-center text-center">
+                        <div class="absolute top-0 left-0 bg-purple-900/50 text-purple-200 text-xs px-3 py-1 rounded-br-lg rounded-tl-xl font-semibold">B. Decentralized Blockchain</div>
+                        <div class="mt-4"><i class="fas fa-building text-2xl text-slate-400 mb-2" aria-hidden="true"></i><br><span class="text-xs font-semibold">Employer Verifying</span></div>
+                        <div class="h-8 border-l-2 border-dashed border-slate-500 my-2"></div>
+                        <div class="transition-all duration-300">
+                            <i class="fas fa-cubes text-3xl text-purple-400 mb-2" aria-hidden="true"></i><br>
+                            <span class="text-xs font-semibold">Global Public Ledger</span>
+                        </div>
+                        <div id="resultB" class="mt-6 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 w-full transition-all">
+                            <i class="fas fa-check-circle text-emerald-500 text-xl mb-1" aria-hidden="true"></i>
+                            <p class="text-xs text-emerald-400 font-medium">Verified: Cryptographic Match</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 bg-emerald-900/20 border border-emerald-500/30 rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold text-emerald-400 mb-6"><i class="fas fa-chart-pie mr-2" aria-hidden="true"></i>Market Opportunity Snapshot</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-slate-800 rounded-lg p-4 border border-slate-700 text-center flex flex-col justify-center">
+                        <div class="text-2xl font-bold text-white mb-1">$10.4B USD</div>
+                        <div class="w-full bg-slate-700 h-1.5 rounded-full mt-2 mb-2 overflow-hidden" aria-hidden="true">
+                            <div class="bg-gradient-to-r from-sky-400 to-indigo-500 h-full rounded-full w-[85%]"></div>
+                        </div>
+                        <div class="text-xs text-slate-400">Projected Market Size (2034)</div>
+                    </div>
+                    <div class="bg-slate-800 rounded-lg p-4 border border-slate-700 text-center flex flex-col justify-center">
+                        <div class="text-2xl font-bold text-white mb-1">96%</div>
+                        <div class="w-full bg-slate-700 h-1.5 rounded-full mt-2 mb-2 overflow-hidden" aria-hidden="true">
+                            <div class="bg-emerald-400 h-full rounded-full w-[96%]"></div>
+                        </div>
+                        <div class="text-xs text-slate-400">Employers Valuing Micro-credentials</div>
+                    </div>
+                    <div class="bg-slate-800 rounded-lg p-4 border border-slate-700 text-center flex flex-col justify-center">
+                        <div class="text-2xl font-bold text-white mb-1">17 - 21.5%</div>
+                        <div class="w-full bg-slate-700 h-1.5 rounded-full mt-2 mb-2 overflow-hidden" aria-hidden="true">
+                            <div class="bg-amber-400 h-full rounded-full w-[21.5%]"></div>
+                        </div>
+                        <div class="text-xs text-slate-400">CAGR Growth Trajectory (Rapid)</div>
+                    </div>
+                </div>
+                <p class="text-sm text-slate-300 leading-relaxed border-t border-emerald-500/20 pt-4">
+                    Microcredentials are having a moment. They are a response to a labor market and broader educational shift that favours flexibility, agility, self-control, and measurable results. There are four main drivers of this market: rising incidences of fraud and verification failures, the growth of online learning, digital identity and credential policy mandates, and the acceleration of remote and hybrid hiring in a global talent market. <a class="text-blue-600 underline hover:text-blue-800" href="https://dataintelo.com/report/micro-credential-verification-blockchain-market" target="_blank">(DataIntelo, 2026)</a>; <a class="text-blue-600 underline hover:text-blue-800" href="https://www.pok.tech/blog/posts/future-microcredentials-education-employability-statistics-2025#2025-and-beyond-key-trends" target="_blank">(POK, 2025)</a>.
+                </p>
+            </div>
+        </section>
+
+        <section class="glass-panel rounded-2xl p-8 md:p-12 shadow-2xl animate-fade-in">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="bg-purple-500/20 text-purple-400 p-2 rounded-lg" aria-hidden="true"><i class="fas fa-search-dollar"></i></span>
+                <h2 class="text-2xl font-bold">Section 2: Case Study - Accredible</h2>
+            </div>
+            
+            <p class="text-slate-300 mb-12">
+                Accredible is an enterprise-grade digital credentialing platform used by universities, corporations, and professional associations to design, issue, and manage verifiable digital certificates and badges. They offer an option to issue credentials against the blockchain ledger through Ethereum, a blockchain currency. They offer integrations with LinkedIn and over 40 other social or professional platforms, analytics services to track learner engagement and learning pathways, and design tools for customizing credentials.
+            </p>
+
+            <div class="bg-slate-900 rounded-xl p-8 border border-slate-700 mb-12 overflow-hidden flex flex-col items-center relative">
+                <div class="absolute top-4 left-4 text-purple-400"><i class="fas fa-cube text-2xl" aria-hidden="true"></i></div>
+                <h3 class="text-2xl font-bold mb-2 text-white">The CUBE Analysis</h3>
+                <p class="text-sm text-slate-400 mb-8 animate-pulse"><i class="fas fa-mouse-pointer mr-2" aria-hidden="true"></i>Drag to rotate. Click any face to expand.</p>
+                
+                <div class="scene">
+                    <div class="cube" id="cube">
+                        <div class="cube-face face-front" onclick="openModal('Type of Market')" role="button" tabindex="0" aria-label="Open research: Type of Market" onkeydown="if(event.key==='Enter') openModal('Type of Market')">
+                            <i class="fas fa-store text-4xl mb-3" aria-hidden="true"></i><span>Type of<br>Market</span>
+                        </div>
+                        <div class="cube-face face-right" onclick="openModal('Type of Offering')" role="button" tabindex="0" aria-label="Open research: Type of Offering" onkeydown="if(event.key==='Enter') openModal('Type of Offering')">
+                            <i class="fas fa-box-open text-4xl mb-3" aria-hidden="true"></i><span>Type of<br>Offering</span>
+                        </div>
+                        <div class="cube-face face-back" onclick="openModal('Who is the Buyer?')" role="button" tabindex="0" aria-label="Open research: Who is the Buyer?" onkeydown="if(event.key==='Enter') openModal('Who is the Buyer?')">
+                            <i class="fas fa-users text-4xl mb-3" aria-hidden="true"></i><span>Who is<br>the Buyer?</span>
+                        </div>
+                        <div class="cube-face face-left" onclick="openModal('Global Target')" role="button" tabindex="0" aria-label="Open research: Global Target" onkeydown="if(event.key==='Enter') openModal('Global Target')">
+                            <i class="fas fa-globe-americas text-4xl mb-3" aria-hidden="true"></i><span>Global<br>Target</span>
+                        </div>
+                        <div class="cube-face face-top" onclick="openModal('Market Status')" role="button" tabindex="0" aria-label="Open research: Market Status" onkeydown="if(event.key==='Enter') openModal('Market Status')">
+                            <i class="fas fa-chart-line text-4xl mb-3" aria-hidden="true"></i><span>Market<br>Status</span>
+                        </div>
+                        <div class="cube-face face-bottom" onclick="openModal('Competition')" role="button" tabindex="0" aria-label="Open research: Competition" onkeydown="if(event.key==='Enter') openModal('Competition')">
+                            <i class="fas fa-chess-knight text-4xl mb-3" aria-hidden="true"></i><span>Competition</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="print-fallback w-full border border-slate-300 rounded-lg p-6 mt-4 text-sm text-black">
+                    <h4 class="font-bold text-lg mb-4">CUBE Analysis Summary:</h4>
+                    <ul class="list-disc pl-6 space-y-3">
+                        <li><strong>Type of Market:</strong> Primarily operating in the B2B EdTech and Enterprise SaaS (software as a service) markets. They specifically target workforce development and higher education segments. There is no direct-to-consumer interface.</li>
+                        <li><strong>Type of Offering:</strong> Accredible provides infrastructure for trust and recognition. Businesses build their operational workflows on top of it. It plugs in directly to LMS platforms like Canvas, Blackboard, Moodle, etc.</li>
+                        <li><strong>Who is the Buyer?:</strong> The corporate Chief HR Officer, Director of Learning and Development, or higher education Dean of Continuing Education / Head of Professional Development.</li>
+                        <li><strong>Global Target:</strong> An entirely borderless, global platform leveraging digital connectivism and cloud architecture to eradicate borders in a global talent market.</li>
+                        <li><strong>Market Status:</strong> A maturing market showing consolidation (e.g., Pearson purchasing Credly). The 1EdTech Open Badges standard indicates a shared technical guideline for long-term stability.</li>
+                        <li><strong>Competition:</strong> Competes directly with company’s in-house internal badge systems, as well as institutionalized giants like Credly, positioning itself as the more nimble, adaptable, and customizable alternative.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-slate-800 rounded-xl p-6 border-t-4 border-sky-500 print:border border-slate-300 print:text-black print:bg-white">
+                    <h3 class="font-bold text-lg mb-2"><i class="fas fa-lightbulb text-sky-400 mr-2 print:hidden" aria-hidden="true"></i>Pain Point & Solution</h3>
+                    <p class="text-sm text-slate-400 print:text-black">Accredible automates digital credential delivery to eliminate administrative bottlenecks and prevents fraud with one-click blockchain verification. It provides a user-friendly interface that translates complex blockchain security into branded, verifiable and sharable digital profiles for learners.</p>
+                </div>
+                <div class="bg-slate-800 rounded-xl p-6 border-t-4 border-amber-500 print:border border-slate-300 print:text-black print:bg-white">
+                    <h3 class="font-bold text-lg mb-2"><i class="fas fa-star text-amber-400 mr-2 print:hidden" aria-hidden="true"></i>Differentiation</h3>
+                    <p class="text-sm text-slate-400 print:text-black">Accredible is more agile and customizable than other larger companies in the space. More importantly, it is leveraging a zero-friction social virality strategy. Accredible’s “One-Click Acceptance” removes the hassle of creating multiple accounts and profiles to accept credentials. This results in a 75% higher social sharing rate than legacy systems.</p>
+                </div>
+                <div class="bg-slate-800 rounded-xl p-6 border-t-4 border-rose-500 print:border border-slate-300 print:text-black print:bg-white">
+                    <h3 class="font-bold text-lg mb-2"><i class="fas fa-door-open text-rose-400 mr-2 print:hidden" aria-hidden="true"></i>Exit Strategy</h3>
+                    <p class="text-sm text-slate-400 print:text-black">The most likely scenario would be an acquisition by a larger institutionalized company, similar to the Credly-Pearson acquisition. Competitors such as Anthology or D2L come to mind as they currently do not have a standalone credentialing structure.</p>
+                </div>
+            </div>
+
+            <div class="w-full bg-emerald-900/20 border-l-4 border-emerald-500 rounded-xl p-6 shadow-inner mt-4 print:border print:border-slate-300 print:bg-white">
+                <h3 class="text-xl font-bold text-emerald-400 mb-3 print:text-black"><i class="fas fa-user-check mr-2 print:hidden" aria-hidden="true"></i>Vibe Check and Credibility</h3>
+                <ul class="text-sm text-slate-300 leading-relaxed list-disc pl-6 space-y-3 print:text-black">
+                    <li>
+                        <strong>Danny King (Co-founder & CEO)</strong> – Championing the product after experiencing the limitations of traditional grading systems and academic gatekeeping <a class="text-blue-600 underline hover:text-blue-800" href="https://www.forbes.com/sites/tomvanderark/2022/08/09/how-accredible-makes-learning-credible/" target="_blank">(Forbes, 2022)</a>. He piloted the venture through Y Combinator and grew it from a simple certificate issuer into a global, enterprise-grade credentialing infrastructure.
+                    </li>
+                    <li>
+                        <strong>Alan Heppenstall (Co-founder & CTO)</strong> – Holds a Master of Science in Computer Science. He has a long history of digital entrepreneurship through PUBme Ltd, served as an IT Officer at NACUE, and worked as a Project Manager at WSIPowerontheweb <a class="text-blue-600 underline hover:text-blue-800" href="https://theorg.com/org/accredible/org-chart/alan-heppenstall" target="_blank">(theorg.com, n.d.)</a>.
+                    </li>
+                    <li>
+                        <strong>Board Directors & Investors</strong> – Includes Tim Connors of PivotNorth Capital and Andrew Lindner of Frontier Growth <a class="text-blue-600 underline hover:text-blue-800" href="https://tracxn.com/d/companies/accredible/__5ojxfMZ9NUnv-QLxq6NUl-F7g3qaKAxj1K7FT0pQZBY#about-the-company" target="_blank">(tracxn.com, 2026)</a>, providing experienced strategic oversight and growth-oriented investment support.
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="glass-panel rounded-2xl p-8 md:p-12 shadow-2xl animate-fade-in">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg" aria-hidden="true"><i class="fas fa-chart-line"></i></span>
+                <h2 class="text-2xl font-bold">Section 3: Discussing Viability - Should We Invest?</h2>
+            </div>
+            
+            <div class="bg-slate-900 rounded-xl p-8 border border-slate-700 mb-8 print:border print:bg-white print:text-black">
+                <h3 class="text-xl font-bold mb-4 gradient-text print:text-black">Final EVA Verdict</h3>
+                <p class="text-slate-300 leading-relaxed print:text-black">
+                    Taking this all into account, this EVA would recommend with 80% that further investment into this venture would be a sound choice. Accredible clearly has a strong history, sound infrastructure, and is recognized and used globally by a multitude of institutions and companies in the learning and development sector. 
+                    <br><br>
+                    Accredible has exhibited strong customer and revenue retention through their technical integrations that make them hard to switch away from. They have strategically leveraged the social viral acquisition loop; every time an end-user shares their credential, Accredible earns a free B2B impression with other recruiters and enterprise companies. <a class="text-blue-600 underline hover:text-blue-800" href="https://www.accredible.com/platform" target="_blank">(Accredible.com, n.d.)</a> Finally, the co-founders and their team of administrators and board members have proven success in the space, and this EVA could find no red-flags relating to their credence in the process of this analysis.
+                    <br><br>
+                </p>
+                <p class="text-slate-300 leading-relaxed print:text-black">
+                    Since Accredible has moved beyond its series-B fundraising, current investors should look to participate in late-stage C or D funding rounds to help structure international scaling and go-to-market expansion teams to capitalize on high growth in other market regions.
+                </p>
+            </div>
+
+            <div class="mb-8 bg-slate-900 rounded-xl p-8 border border-slate-700 shadow-2xl relative overflow-hidden print:border print:bg-white print:text-black">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-sky-500/5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2 pointer-events-none print:hidden"></div>
+                
+                <div class="grid md:grid-cols-2 gap-8 items-center relative z-10">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2 print:text-black"><i class="fas fa-tachometer-alt text-sky-400 mr-2 print:hidden" aria-hidden="true"></i>Investor Conviction Level</h3>
+                        
+                        <div class="relative w-full h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-600 mb-3 print:hidden" aria-hidden="true">
+                            <div class="absolute top-0 left-0 h-full bg-gradient-to-r from-rose-500 via-amber-500 to-emerald-500 w-[80%] shadow-[0_0_10px_rgba(245,158,11,0.5)]"></div>
+                        </div>
+                        <div class="flex justify-between text-xs font-bold uppercase tracking-wider text-slate-500 print:text-black">
+                            <span class="text-rose-500 print:text-black">Pass</span>
+                            <span class="text-amber-500 pl-4 print:text-black">Hold / Watch</span>
+                            <span class="text-emerald-500 print:text-black font-extrabold text-lg">Strong Buy (80%)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="md:border-l md:border-slate-700 md:pl-8">
+                        <h3 class="text-lg font-bold text-white mb-4 print:text-black"><i class="fas fa-clipboard-list text-amber-400 mr-2 print:hidden" aria-hidden="true"></i>Critical Considerations</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-sky-400 mt-1 mr-3 text-sm print:hidden" aria-hidden="true"></i>
+                                <p class="text-sm text-slate-300 print:text-black"><strong class="text-white print:text-black">The Pearson-Credly Monopoly:</strong> Keep a close eye on this giant gobbling up market share.</p>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-sky-400 mt-1 mr-3 text-sm print:hidden" aria-hidden="true"></i>
+                                <p class="text-sm text-slate-300 print:text-black"><strong class="text-white print:text-black">EU Digital Wallet Frameworks:</strong> If governments dictate changes in crypto- or credentialing policy, Accredible must ensure its infrastructure translates natively without losing analytical monopolies.</p>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-sky-400 mt-1 mr-3 text-sm print:hidden" aria-hidden="true"></i>
+                                <p class="text-sm text-slate-300 print:text-black"><strong class="text-white print:text-black">Keep It Simple:</strong> If the company were to expand into generalized LMS territory, they would alienate their core business partners.</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-indigo-900/30 border-l-4 border-indigo-500 rounded-xl p-6 shadow-inner print:border print:bg-white print:border-slate-300">
+                <h3 class="text-lg font-semibold text-indigo-300 mb-2 print:text-black"><i class="fas fa-globe mr-2 print:hidden" aria-hidden="true"></i>The Future of the Credentialing Space</h3>
+                <p class="text-sm text-slate-300 leading-relaxed print:text-black">
+                    In conclusion, the micro-credential market space is here to stay, and blockchain certified accreditations are the natural next step in insuring that these credentials are permanent, easily verifiable, and immune to tampering. There are multiple current concerns with blockchain certificates <a class="text-blue-600 underline hover:text-blue-800" href="https://certopus.com/blog/verifiable-credentials-on-blockchain" target="_blank">(Bhatia, 2026)</a>. Accredible addresses one of the usual main concerns for downfalls of blockchain accreditations -- technological complexity -- by handling the complicated technical aspects and passing the rest of the benefits on to the enterprises and end users. They have also solved the challenge of integration with legacy systems and user adoption barriers by integrating directly into large LMS, CRM, and HR platforms. There are still some concerns around regulatory uncertainty, but as blockchain becomes more commonplace these regulations and standardization practices should become less of a problem. As far as this EVA is considered, it is a rock-solid company with room to grow.
+                </p>
+            </div>
+        </section>
+
+        <section class="glass-panel rounded-2xl p-8 shadow-2xl animate-fade-in">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-lightbulb text-yellow-400" aria-hidden="true"></i> Section 4: Conclusion</h2>
+            <p class="text-sm text-slate-300 leading-relaxed mb-4 print:text-black">
+                In completing this assignment, along with others in the course, I feel I am becoming more prepared to put together my own opportunity pitch for Assignment #3. While I am unsure of the exact topic/product/service I will choose, I am becoming more confident in finding the requisite information and research materials needed to make informed decisions about where there is opportunity, in which markets, and how to shape a realistic and inviting pitch that is succinct and powerful.
+            </p>
+            <p class="text-sm text-slate-300 leading-relaxed print:text-black">
+                One area in which I could still be more confident is in my ability to actually formulate my own solutions and value propositions to pain points that I find in my research. I've heard tell of many successful business that were successful merely because people acted on issues that others didn't act on, even in the most mundane contexts. I also want to learn more about what it means to build a team for success, as I feel much of my professional experience has been characterized by differing levels of isolation. Teaching, for all its wonders, can be a very isolating profession. Thankfully more recent experiences of participating in an AI and Digital Literacy working group have allowed me to rediscover the joy of working jointly on a shared vision, and I hope that helps to inform my team-building decisions in the future.
+            </p>
+        </section>
+
+        <section class="glass-panel rounded-2xl p-8 shadow-2xl animate-fade-in">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-robot text-sky-400" aria-hidden="true"></i> Section 5: AI Disclaimer</h2>
+            <p class="text-sm text-slate-300 leading-relaxed mb-4 print:text-black">
+                In the creation of this assignment, Google's Gemini AI chatbot was employed to help with ideation, HTML coding and editing, and as a research assistant. The vast majority of the text copy contained in this presentation was researched, drafted, editing, and entered into the presentation by the human author. Gemini was tasked with constructing the HTML code of the presentation, and acted as the main constructor of interactives and visualizations in the presentation via instruction from the human author. 
+            </p>
+            <p class="text-sm text-slate-300 leading-relaxed print:text-black">
+                In using AI for this project, I further entrenched my idea that I am able to use AI to extend my capabilities as an educator, while maintaining my cognitive autonomy and rigor in the process. In this project, Gemini allowed me to focus on actually reading and vetting sources rather than finding them. It allowed me to create a clean and interactive presentation that likely would've taken me 4 times as long to create if I even did know how to code; I do not. The experience of having so many "assistants" at my fingertips has become commonplace to me, and I am curious to see what other capabilities AI will instill in professional users in the coming years. 
+            </p>
+        </section>
+
+        <section class="glass-panel rounded-2xl p-8 shadow-2xl animate-fade-in">
+            <h2 class="text-xl font-bold mb-6 flex items-center gap-2"><i class="fas fa-book text-sky-400" aria-hidden="true"></i> Section 6: References</h2>
+            <div class="space-y-4 text-sm text-slate-300 pl-8 print:text-black" style="text-indent: -2rem;">
+                <p>Accredible. (n.d.). <i>Platform</i>. <a href="https://www.accredible.com/platform" class="text-blue-400 hover:underline break-all" target="_blank">https://www.accredible.com/platform</a></p>
+                <p>Bhatia, K. (2026, May 14). <i>Verifiable credentials on blockchain: Pros and cons</i>. Certopus. <a href="https://certopus.com/blog/verifiable-credentials-on-blockchain" class="text-blue-400 hover:underline break-all" target="_blank">https://certopus.com/blog/verifiable-credentials-on-blockchain</a></p>
+                <p>DataIntelo. (2026). <i>Micro-credential verification blockchain market</i>. <a href="https://dataintelo.com/report/micro-credential-verification-blockchain-market" class="text-blue-400 hover:underline break-all" target="_blank">https://dataintelo.com/report/micro-credential-verification-blockchain-market</a></p>
+                <p>DoxyChain. (2024). <i>DoxyChain: Blockchain document management system</i>. <a href="https://doxychain.com" class="text-blue-400 hover:underline break-all" target="_blank">https://doxychain.com</a></p>
+                <p>HolonIQ. (2019). <i>Education in 2030</i>. <a href="https://comms.holoniq.com/hubfs/Education/Asset%20downloads/HolonIQ%20Education%20in%202030.pdf" class="text-blue-400 hover:underline break-all" target="_blank">https://comms.holoniq.com/hubfs/Education/Asset%20downloads/HolonIQ%20Education%20in%202030.pdf</a></p>
+                <p>POK. (2025). <i>Future of microcredentials: Education & employability statistics 2025</i>. <a href="https://www.pok.tech/blog/posts/future-microcredentials-education-employability-statistics-2025#2025-and-beyond-key-trends" class="text-blue-400 hover:underline break-all" target="_blank">https://www.pok.tech/blog/posts/future-microcredentials-education-employability-statistics-2025#2025-and-beyond-key-trends</a></p>
+                <p>Pu, S., & Lam, J. S. L. (2023). The benefits of blockchain for digital certificates: A multiple case study. <i>Technology in Society</i>. <a href="https://www.sciencedirect.com/science/article/pii/S0160791X22003177" class="text-blue-400 hover:underline break-all" target="_blank">https://www.sciencedirect.com/science/article/pii/S0160791X22003177</a></p>
+                <p>The Org. (n.d.). <i>Alan Heppenstall</i>. <a href="https://theorg.com/org/accredible/org-chart/alan-heppenstall" class="text-blue-400 hover:underline break-all" target="_blank">https://theorg.com/org/accredible/org-chart/alan-heppenstall</a></p>
+                <p>Tracxn. (2026). <i>Accredible</i>. <a href="https://tracxn.com/d/companies/accredible/__5ojxfMZ9NUnv-QLxq6NUl-F7g3qaKAxj1K7FT0pQZBY#about-the-company" class="text-blue-400 hover:underline break-all" target="_blank">https://tracxn.com/d/companies/accredible/__5ojxfMZ9NUnv-QLxq6NUl-F7g3qaKAxj1K7FT0pQZBY#about-the-company</a></p>
+                <p>TRUE Original. (2026). <i>Blockchain vs traditional certificate verification: A complete comparison</i>. <a href="https://www.trueoriginal.com/insights/blockchain-vs-traditional-certificate-verification" class="text-blue-400 hover:underline break-all" target="_blank">https://www.trueoriginal.com/insights/blockchain-vs-traditional-certificate-verification</a></p>
+                <p>Vander Ark, T. (2022, August 9). How Accredible makes learning credible. <i>Forbes</i>. <a href="https://www.forbes.com/sites/tomvanderark/2022/08/09/how-accredible-makes-learning-credible/" class="text-blue-400 hover:underline break-all" target="_blank">https://www.forbes.com/sites/tomvanderark/2022/08/09/how-accredible-makes-learning-credible/</a></p>
+            </div>
+        </section>
+
+    </div>
+
+    <div id="cubeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 px-4" aria-hidden="true" role="dialog" aria-labelledby="modalTitle" aria-describedby="modalPrompt">
+        <div class="bg-slate-800 border border-slate-600 rounded-2xl p-8 max-w-lg w-full shadow-2xl transform scale-95 transition-transform duration-300" id="modalContent">
+            <div class="flex justify-between items-start mb-6">
+                <h3 class="text-2xl font-bold text-white" id="modalTitle">Facet Title</h3>
+                <button onclick="closeModal()" aria-label="Close details" class="text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-sky-400 rounded-full p-1">
+                    <i class="fas fa-times text-xl" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                <p class="text-sm text-slate-300 leading-relaxed" id="modalPrompt">
+                    [Research Prompt Content]
+                </p>
+            </div>
+            <button onclick="closeModal()" class="mt-8 w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- SECTION 1 LOGIC (Blockchain Steps & Simulator) ---
+        function showStep(step) {
+            for(let i=1; i<=4; i++) {
+                let btn = document.getElementById('btnStep' + i);
+                btn.className = "step-btn bg-slate-800 border-2 border-slate-600 rounded-full w-16 h-16 flex items-center justify-center text-slate-400 hover:bg-slate-700 transition-all z-10 focus:outline-none focus:ring-2 focus:ring-white";
+                btn.setAttribute('aria-expanded', 'false');
+            }
+            let activeBtn = document.getElementById('btnStep' + step);
+            let descBox = document.getElementById('stepDesc');
+            activeBtn.setAttribute('aria-expanded', 'true');
+            
+            if(step === 1) {
+                activeBtn.className = "step-btn bg-slate-800 border-2 border-sky-500 rounded-full w-16 h-16 flex items-center justify-center text-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.5)] transition-all z-10 focus:outline-none focus:ring-2 focus:ring-white";
+                descBox.innerHTML = `<div><h4 class="font-bold text-sky-400 mb-2">Step 1: The Issuer Grants the Credential</h4><p class="text-sm text-slate-300">An institution (like a university or bootcamp) awards a digital badge to a learner. Instead of just generating a PDF, they prepare to anchor this achievement to the blockchain.</p></div>`;
+            } else if(step === 2) {
+                activeBtn.className = "step-btn bg-slate-800 border-2 border-purple-500 rounded-full w-16 h-16 flex items-center justify-center text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.5)] transition-all z-10 focus:outline-none focus:ring-2 focus:ring-white";
+                descBox.innerHTML = `<div><h4 class="font-bold text-purple-400 mb-2">Step 2: Cryptographic Hashing</h4><p class="text-sm text-slate-300">The credential's data is passed through a mathematical algorithm to create a unique digital fingerprint, called a "hash". This hash is permanently written onto a public blockchain ledger.</p></div>`;
+            } else if(step === 3) {
+                activeBtn.className = "step-btn bg-slate-800 border-2 border-emerald-500 rounded-full w-16 h-16 flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all z-10 focus:outline-none focus:ring-2 focus:ring-white";
+                descBox.innerHTML = `<div><h4 class="font-bold text-emerald-400 mb-2">Step 3: Learner Ownership (Wallet)</h4><p class="text-sm text-slate-300">The learner receives the digital credential in their personal digital wallet. They now have complete, sovereign ownership of the record, independent of the institution's private servers.</p></div>`;
+            } else if(step === 4) {
+                activeBtn.className = "step-btn bg-slate-800 border-2 border-amber-500 rounded-full w-16 h-16 flex items-center justify-center text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.5)] transition-all z-10 focus:outline-none focus:ring-2 focus:ring-white";
+                descBox.innerHTML = `<div><h4 class="font-bold text-amber-400 mb-2">Step 4: Trustless Verification</h4><p class="text-sm text-slate-300">When the learner applies for a job, the employer's system checks the credential's hash against the public blockchain. If they match, the credential is mathematically proven to be authentic and unaltered.</p></div>`;
+            }
+        }
+
+        function setSimState(state) {
+            const btnActive = document.getElementById('btnActive');
+            const btnBankrupt = document.getElementById('btnBankrupt');
+            const serverA = document.getElementById('serverA');
+            const iconServerA = document.getElementById('iconServerA');
+            const resultA = document.getElementById('resultA');
+            const iconResultA = document.getElementById('iconResultA');
+            const textResultA = document.getElementById('textResultA');
+            
+            if (state === 'active') {
+                btnActive.className = "px-4 py-2 rounded-md bg-sky-500 text-slate-900 font-bold transition-all text-sm focus:outline-none focus:ring-2 focus:ring-white";
+                btnBankrupt.className = "px-4 py-2 rounded-md text-slate-400 hover:text-white transition-all text-sm focus:outline-none focus:ring-2 focus:ring-white";
+                serverA.classList.remove('opacity-50', 'grayscale');
+                iconServerA.className = "fas fa-server text-3xl text-sky-400 mb-2";
+                resultA.className = "mt-6 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 w-full transition-all";
+                iconResultA.className = "fas fa-check-circle text-emerald-500 text-xl mb-1";
+                textResultA.className = "text-xs text-emerald-400 font-medium";
+                textResultA.innerText = "Verified: Server Online & Responding";
+            } else {
+                btnActive.className = "px-4 py-2 rounded-md text-slate-400 hover:text-white transition-all text-sm focus:outline-none focus:ring-2 focus:ring-white";
+                btnBankrupt.className = "px-4 py-2 rounded-md bg-rose-500 text-white font-bold transition-all text-sm shadow-[0_0_10px_rgba(244,63,94,0.4)] focus:outline-none focus:ring-2 focus:ring-white";
+                serverA.classList.add('opacity-50', 'grayscale');
+                iconServerA.className = "fas fa-server text-3xl text-rose-500 mb-2";
+                resultA.className = "mt-6 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 w-full transition-all";
+                iconResultA.className = "fas fa-times-circle text-rose-500 text-xl mb-1";
+                textResultA.className = "text-xs text-rose-400 font-medium";
+                textResultA.innerText = "Failed: Server Offline (Unverifiable PDF)";
+            }
+        }
+
+        // --- SECTION 2 LOGIC (3D Cube Physics, Touch, & Modals) ---
+        const cube = document.getElementById('cube');
+        let isDragging = false;
+        let isClickingFace = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        // Initial rotation angles (matches CSS)
+        let cubeRotation = { x: -20, y: 25 }; 
+
+        // Mouse Start drag
+        cube.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            isClickingFace = true; 
+            cube.classList.add('dragging');
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        // Touch Start drag
+        cube.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            isClickingFace = true; 
+            cube.classList.add('dragging');
+            previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }, {passive: true});
+
+        // Mouse Dragging
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                isClickingFace = false; 
+                const deltaMove = {
+                    x: e.clientX - previousMousePosition.x,
+                    y: e.clientY - previousMousePosition.y
+                };
+                cubeRotation.y += deltaMove.x * 0.4;
+                cubeRotation.x -= deltaMove.y * 0.4;
+                cube.style.transform = `translateZ(-125px) rotateX(${cubeRotation.x}deg) rotateY(${cubeRotation.y}deg)`;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            }
+        });
+
+        // Touch Dragging
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                isClickingFace = false; 
+                const deltaMove = {
+                    x: e.touches[0].clientX - previousMousePosition.x,
+                    y: e.touches[0].clientY - previousMousePosition.y
+                };
+                cubeRotation.y += deltaMove.x * 0.5;
+                cubeRotation.x -= deltaMove.y * 0.5;
+                cube.style.transform = `translateZ(-125px) rotateX(${cubeRotation.x}deg) rotateY(${cubeRotation.y}deg)`;
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+        }, {passive: true});
+
+        // End drag handlers
+        document.addEventListener('mouseup', () => endDrag());
+        document.addEventListener('touchend', () => endDrag());
+
+        function endDrag() {
+            if (isDragging) {
+                isDragging = false;
+                cube.classList.remove('dragging');
+            }
+        }
+
+        // Research Prompts Dictionary for the Modals
+        const cubePrompts = {
+            'Type of Market': 'Primarily operating in the B2B EdTech and Enterprise SaaS (software as a service) markets. They specifically target workforce development and higher education segments. There is no direct-to-consumer interface. (Accredible, n.d.)',
+            'Type of Offering': 'Accredible provides infrastructure for trust and recognition. Businesses build their operational workflows on top of it. It plugs in directly to LMS platforms like Canvas, Blackboard, Moodle, etc. ',
+            'Who is the Buyer?': 'The buyer in this case would be the corporation or higher education institution who wants to use their infrastructure. In the corporate setting, the Chief HR Officer or Director of Learning and Development would be the buyer. In higher education, it could be the Dean of Continuing Education or Head of Professional Development.',
+            'Global Target': 'Accredible is an entirely borderless, global platform. That’s baked right into the value proposition. They’re leveraging digital connectivism and cloud architecture to eradicate borders in a global talent market. (DataIntelo, 2026)',
+            'Market Status': 'Digital credentialing is definitely a maturing market. We’ve seen evidence of consolidation such as Pearson, an educational giant, purchasing Credly, one of Accredible’s main competitors. (Credly, n.d.) There is widespread enterprise and institutional adoption. (POK, 2025) The 1EdTech Open Badges standard indicates that there is a shared technical guideline for long-term stability. (IMS Global, 2026)',
+            'Competition': 'If Credly is the institutionalized older brother, then Accredible could be thought of as the more nimble, adaptable and customizable younger brother. Accredible works with core institutional systems such as LMS, CRM and HR systems. It substitutes analog credentials and manual verification. It competes directly with company’s in-house internal badge or certification systems'
+        };
+
+        // Modal Logic
+        const modal = document.getElementById('cubeModal');
+        const modalContent = document.getElementById('modalContent');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalPrompt = document.getElementById('modalPrompt');
+
+        function openModal(facetName) {
+            // Check if it was a distinct click or enter key, not a drag release
+            if (isClickingFace || event.type === 'keydown') {
+                modalTitle.innerText = facetName;
+                modalPrompt.innerText = cubePrompts[facetName] || "Research Prompt Missing.";
+                
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modal.classList.add('opacity-100');
+                modal.setAttribute('aria-hidden', 'false');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+                
+                // Focus management for accessibility
+                setTimeout(() => {
+                    modalContent.querySelector('button').focus();
+                }, 100);
+            }
+        }
+
+        function closeModal() {
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.setAttribute('aria-hidden', 'true');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+        }
+
+        // Close modal on Escape key press
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape" && !modal.classList.contains('pointer-events-none')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
